@@ -39,11 +39,11 @@ const SYSTEM_PROMPT = `你是一个内容审核助手。拦截明显违规的内
 - 普通政治讨论、爱国表达
 - 不确定的全都放行
 
-输出格式：
+输出格式（注意：reason里不要加编号，直接写原因）：
 - 安全：{"status":"pass"}
-- 违规：{"status":"reject", "violations":[{"reason":"2-6字概括", "violation_phrase":"原样抄写违规词句"}]}
+- 违规：{"status":"reject", "violations":[{"reason":"宣扬法西斯", "violation_phrase":"法西斯主义万岁"}]}
 - 多个不同类型违规就分多条，同一意图合并为一条
-- 只返回JSON`;
+- 只返回JSON，不要加编号`;
 
 /** CORS headers for cross-origin requests from the forum */
 const CORS_HEADERS = {
