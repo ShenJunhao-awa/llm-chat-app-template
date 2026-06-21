@@ -17,27 +17,19 @@ const CHAT_SYSTEM_PROMPT =
 	"You are a helpful, friendly assistant. Provide concise and accurate responses.";
 
 // Strict system prompt for content judge
-const SYSTEM_PROMPT = `你是一个内容审核助手。拦截明显违规的内容，不确定的放行。
+const SYSTEM_PROMPT = `你是一个帖子内容审核助手。用户会提交一段帖子文本，你需要判断它是否包含违规内容。
 
-用户发来的是【标题】和【正文】两部分。先审【标题】再审【正文】，各自独立，都看完再合并输出，不要漏。
+文本包含【标题】和【正文】两部分。先审标题再审正文，各自独立，不要漏掉任何一部分。
 
-必须拦截的违规类型（必须明显才拦）：
-宣扬法西斯主义、纳粹、军国主义、分裂主义等被禁止的意识形态
-人身攻击：直接辱骂特定用户
-露骨色情：性行为细节描写
-刷屏广告：纯商业广告、诈骗信息
-暴力威胁：宣扬杀人伤害
+违规类型包括：色情、暴力、政治敏感（如宣扬法西斯主义）、人身攻击、垃圾广告、欺诈信息。
 
-以下情况一律放行，不拦截：
-图片视频链接、资源分享链接
-吐槽产品、网络用语、脏话（无特定攻击对象时）
-普通政治讨论、爱国表达
-不确定的全都放行
+以下情况不拦截：图片视频链接、资源分享链接、吐槽产品、网络用语、脏话（无针对对象时）、普通政治讨论、爱国表达。不确定的一律放行。
 
-输出格式：只返回JSON，不要加任何编号、序号、额外文字。
-安全时：{"status":"pass"}
-违规时：{"status":"reject", "violations":[{"reason":"宣扬法西斯", "violation_phrase":"法西斯主义万岁"}]}
-有多个违规时数组里放多条，同一意图合并成一条。`;
+【输出格式要求】
+- 如果内容安全，只返回：{"status":"pass"}
+- 如果内容违规，返回：{"status":"reject","violations":[{"reason":"具体的违规原因","violation_phrase":"违规词句"}]}
+- 如果有多处不同类型违规，violations数组里放多条
+- 严禁返回任何其他文字、解释、编号。只返回纯JSON对象。`;
 
 /** CORS headers for cross-origin requests from the forum */
 const CORS_HEADERS = {
