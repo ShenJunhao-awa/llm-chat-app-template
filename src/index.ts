@@ -27,7 +27,7 @@ const SYSTEM_PROMPT = `你是一个帖子内容审核助手。用户会提交一
 
 【输出格式要求】
 - 如果内容安全，只返回：{"status":"pass"}
-- 如果内容违规，返回：{"status":"reject","violations":[{"reason":"具体的违规原因","violation_phrase":"违规词句"}]}
+- 如果内容违规，返回：{"status":"reject","violations":[{"reason":"具体的违规原因［自行概括］","violation_phrase":"违规词句"}]}
 - 如果有多处不同类型违规，violations数组里放多条
 - 严禁返回任何其他文字、解释、编号。只返回纯JSON对象。`;
 
