@@ -10,7 +10,7 @@
 import { Env, ChatMessage } from "./types";
 
 // Model ID for Workers AI model
-const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
+const MODEL_ID = "@cf/qwen/qwen2.5-14b-instruct-awq";
 
 // Default system prompt for chat
 const CHAT_SYSTEM_PROMPT =
@@ -41,6 +41,8 @@ const SYSTEM_PROMPT = `你是一个内容审核助手。你的任务是判断文
 - "傻逼游戏" → 放行（骂游戏）
 - "傻逼楼主" → 拦截（骂人）
 - "太逆天了" → 放行（网络用语）
+- "孙笑川简直日本天皇级别" → 放行（玩梗、网络文化，非人身攻击）
+- "孙笑川" → 放行（网络主播名字，不是违规词）
 - 不确定 → 放行
 
 【输出格式】
@@ -172,6 +174,7 @@ async function handleJudgeRequest(
 				{ role: "user", content: content },
 			],
 			max_tokens: 50, // Only needs to output {"status":"pass"} — ~20 tokens
+			temperature: 0, // 温度=0 保证每次输出一致
 			stream: false,
 		});
 
