@@ -54,7 +54,7 @@ const SYSTEM_PROMPT = `你是一个内容审核助手。你的任务是判断文
 const CORS_HEADERS = {
 	"Access-Control-Allow-Origin": "https://forum.jgp.dpdns.org",
 	"Access-Control-Allow-Methods": "POST, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type",
+	"Access-Control-Allow-Headers": "Content-Type, x-judge-key",
 	"Access-Control-Max-Age": "86400",
 };
 
