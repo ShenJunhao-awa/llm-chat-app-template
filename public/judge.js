@@ -75,8 +75,17 @@ async function judgeText() {
     } else if (data.status === "reject") {
       judgeBadgePass.classList.add("hidden");
       judgeBadgeReject.classList.remove("hidden");
-      const phrase = data.violation_phrase ? `（违规词：${data.violation_phrase}）` : '';
-      judgeOutput.textContent = `❌ 内容违规：${data.reason || "未指定原因"} ${phrase}`;
+      // 优先展示 violations 数组（多条），兼容旧格式单条
+      let detail = '';
+      if (Array.isArray(data.violations) && data.violations.length > 0) {
+        detail = data.violations.map((v: any) =>
+          `${v.reason}（${v.violation_phrase}）`
+        ).join('；');
+      } else if (data.reason) {
+        const phrase = data.violation_phrase ? `（${data.violation_phrase}）` : '';
+        detail = `${data.reason} ${phrase}`;
+      }
+      judgeOutput.textContent = `❌ 内容违规：${detail || "未指定原因"}`;
       judgeOutput.className = "text-red-700 font-medium";
     } else {
       judgeOutput.textContent = "⚠️ 审核结果异常：" + (data.error || "未知状态");

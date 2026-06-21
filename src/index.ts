@@ -17,7 +17,7 @@ const CHAT_SYSTEM_PROMPT =
 	"You are a helpful, friendly assistant. Provide concise and accurate responses.";
 
 // Strict system prompt for content judge
-const SYSTEM_PROMPT = `你是一个内容审核助手。你的任务是判断文本是否有明确的、针对个人的恶意攻击，或者明显的违法内容。
+const SYSTEM_PROMPT = `你是一个内容审核助手。你的任务是检查文本中是否有违规内容。如果有多处违规，**必须全部列出**。
 
 【必须放行的情况（看到这些不要拦截）】
 - 吐槽、抱怨任何产品、服务、游戏、软件体验差
@@ -39,6 +39,7 @@ const SYSTEM_PROMPT = `你是一个内容审核助手。你的任务是判断文
 - "开发者脑子有病吧" → 放行（批评厂商，非针对论坛用户）
 - "你真是个白痴"（回复某人）→ 拦截（针对具体用户的人身攻击）
 - "你们的妈都死了" → 拦截（针对用户及其家人的辱骂）
+- "法西斯主义万岁" → 拦截（政治敏感）
 - "傻逼游戏" → 放行（骂游戏）
 - "傻逼楼主" → 拦截（骂人）
 - "太逆天了" → 放行（网络用语）
@@ -46,9 +47,10 @@ const SYSTEM_PROMPT = `你是一个内容审核助手。你的任务是判断文
 - "孙笑川" → 放行（网络主播名字，不是违规词）
 - 不确定 → 放行
 
-【输出格式】
+【输出格式 - 重要：必须扫描全文，列出所有违规】
 - 安全：{"status":"pass"}
-- 违规：{"status":"reject", "reason":"违规类型", "violation_phrase":"具体违规词"}
+- 违规（可能有多条）：{"status":"reject", "violations":[{"reason":"人身攻击", "violation_phrase":"你们的妈都死了"}, {"reason":"政治敏感", "violation_phrase":"法西斯主义万岁"}]}
+- 如果有多处违规，violations 数组里放全部，不要只返回第一条
 - 只返回JSON，不要其他文字`;
 
 /** CORS headers for cross-origin requests from the forum */
@@ -239,14 +241,20 @@ async function handleJudgeRequest(
 
 		// Try to parse the JSON from the AI response
 		let status: "pass" | "reject" = "pass"; // Default to pass if parsing fails
+		let violations: { reason: string; violation_phrase: string }[] = [];
 		let reason: string | undefined;
 		let violationPhrase: string | undefined;
 		try {
 			const parsed = JSON.parse(rawResponse.trim());
 			if (parsed.status === "pass" || parsed.status === "reject") {
 				status = parsed.status;
-				reason = parsed.reason;
-				violationPhrase = parsed.violation_phrase;
+				// 优先使用 violations 数组（新格式），其次用单条 reason/violation_phrase（旧格式兼容）
+				if (Array.isArray(parsed.violations) && parsed.violations.length > 0) {
+					violations = parsed.violations;
+				} else {
+					reason = parsed.reason;
+					violationPhrase = parsed.violation_phrase;
+				}
 			}
 		} catch {
 			// If AI didn't return valid JSON, try to extract from the raw text
@@ -258,8 +266,12 @@ async function handleJudgeRequest(
 		}
 
 		const responseBody: Record<string, any> = { status };
-		if (reason) responseBody.reason = reason;
-		if (violationPhrase) responseBody.violation_phrase = violationPhrase;
+		if (violations.length > 0) {
+			responseBody.violations = violations;
+		} else {
+			if (reason) responseBody.reason = reason;
+			if (violationPhrase) responseBody.violation_phrase = violationPhrase;
+		}
 
 		return new Response(
 			JSON.stringify(responseBody),
