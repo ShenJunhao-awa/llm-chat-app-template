@@ -362,7 +362,7 @@
 					<div class="raw-response" style="margin-top: 0.3rem;">{ "content": "要审核的帖子内容" }</div>
 
 					<h3>响应格式</h3>
-					<div class="raw-response" style="margin-top: 0.3rem;">✅ 通过：{ "status": "pass" }&#10;❌ 拒绝（单条）：{ "status": "reject", "reason": "人身攻击", "violation_phrase": "蠢货" }&#10;❌ 拒绝（多条）：{ "status": "reject", "violations": [{ "reason": "人身攻击", "violation_phrase": "你们的妈都死了" }, { "reason": "政治敏感", "violation_phrase": "法西斯主义万岁" }] }&#10;⚠️ 异常：{ "status": "pass", "error": "审核服务异常，已默认放行" }</div>
+					<div class="raw-response" style="margin-top: 0.3rem;">✅ 通过：{ "status": "pass" }&#10;❌ 拒绝：{ "status": "reject", "violations": [{ "reason": "咒骂论坛用户的家人，属于人身攻击", "violation_phrase": "你们的妈都死了" }, { "reason": "宣扬被禁意识形态", "violation_phrase": "法西斯主义万岁" }] }&#10;⚠️ 异常：{ "status": "pass", "error": "审核服务异常，已默认放行" }</div>
 
 					<h3>审核原则</h3>
 					<div class="raw-response" style="margin-top: 0.3rem;">• 骂产品/游戏/公司 → 放行&#10;• 骂论坛里的其他用户 → 拦截&#10;• 玩梗、网络用语、吐槽 → 放行&#10;• 不确定 → 放行</div>

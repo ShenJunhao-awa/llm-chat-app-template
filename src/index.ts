@@ -56,9 +56,15 @@ const SYSTEM_PROMPT = `你是一个内容审核助手。你的任务是检查文
 
 【输出格式 - 重要：必须扫描全文，列出所有违规】
 - 安全：{"status":"pass"}
-- 违规（可能有多条）：{"status":"reject", "violations":[{"reason":"人身攻击", "violation_phrase":"你们的妈都死了"}, {"reason":"政治敏感", "violation_phrase":"法西斯主义万岁"}]}
+- 违规（可能有多条）：{"status":"reject", "violations":[{"reason":"用一句话说明为什么违规", "violation_phrase":"原样摘抄的具体违规词或短句"}, {"reason":"用一句话说明为什么违规", "violation_phrase":"原样摘抄的具体违规词或短句"}]}
+- reason 字段让 AI 自己用一句话说明为什么违规，不要用固定的分类名称
+- violation_phrase 必须原样复制用户帖子中的具体违规词语
 - 如果有多处违规，violations 数组里放全部，不要只返回第一条
-- 只返回JSON，不要其他文字`;
+- 只返回JSON，不要其他文字
+
+【输出示例】
+文本："你们的妈都死了，法西斯主义万岁"
+输出：{"status":"reject", "violations":[{"reason":"咒骂论坛用户的家人，属于人身攻击", "violation_phrase":"你们的妈都死了"}, {"reason":"宣扬被中国法律禁止的法西斯主义", "violation_phrase":"法西斯主义万岁"}]}`;
 
 /** CORS headers for cross-origin requests from the forum */
 const CORS_HEADERS = {
