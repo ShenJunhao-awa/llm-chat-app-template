@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>AI Judge — 内容审核系统 + AI 聊天</title>
+		<title>AI Judge — 内容审核系统</title>
 		<style>
 			:root {
 				--primary: #f6821f;
@@ -28,6 +28,70 @@
 				margin: 0 auto;
 				padding: 1rem;
 			}
+
+			/* ===== Site Login Overlay ===== */
+			#site-login-overlay {
+				position: fixed;
+				inset: 0;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				z-index: 9999;
+			}
+			#site-login-overlay.hidden { display: none; }
+
+			.login-box {
+				background: white;
+				border-radius: 16px;
+				padding: 2.5rem 2rem;
+				width: 90%;
+				max-width: 360px;
+				box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+				text-align: center;
+			}
+			.login-box h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+			.login-box p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1.5rem; }
+			.login-box input {
+				width: 100%;
+				padding: 0.75rem 1rem;
+				border: 2px solid var(--border);
+				border-radius: 10px;
+				font-size: 1rem;
+				outline: none;
+				transition: border-color 0.2s;
+				margin-bottom: 1rem;
+			}
+			.login-box input:focus { border-color: var(--primary); }
+			.login-box button {
+				width: 100%;
+				padding: 0.75rem;
+				background: var(--primary);
+				color: white;
+				border: none;
+				border-radius: 10px;
+				font-size: 1rem;
+				font-weight: 600;
+				cursor: pointer;
+				transition: background 0.2s;
+			}
+			.login-box button:hover { background: var(--primary-hover); }
+			.login-box button:disabled { opacity: 0.6; cursor: not-allowed; }
+			.login-error {
+				color: var(--red);
+				font-size: 0.85rem;
+				margin-top: 0.75rem;
+				display: none;
+			}
+			.login-error.visible { display: block; }
+			.login-box .hint {
+				font-size: 0.75rem;
+				color: #aaa;
+				margin-top: 1rem;
+			}
+
+			/* ===== Main Content ===== */
+			#main-content.hidden { display: none; }
 
 			header {
 				text-align: center;
@@ -127,7 +191,6 @@
 				color: var(--text-light);
 			}
 
-			/* Result area */
 			#judge-result { margin-top: 1rem; }
 			.result-badge {
 				display: inline-block;
@@ -211,111 +274,163 @@
 		</style>
 	</head>
 	<body>
-		<header>
-			<h1>⚖️ AI Judge</h1>
-			<p class="subtitle">内容审核系统 — 检测帖子、评论中的违规内容 ｜ 内置 AI 聊天助手</p>
-		</header>
-
-		<!-- Tabs -->
-		<div class="tabs">
-			<button class="tab active" data-tab="judge">🧑‍⚖️ 审核测试</button>
-			<button class="tab" data-tab="chat">💬 AI 聊天</button>
-			<button class="tab" data-tab="about">📖 接入说明</button>
+		<!-- Site Login Overlay -->
+		<div id="site-login-overlay">
+			<div class="login-box">
+				<h1>🔒 AI Judge</h1>
+				<p>请输入访问密码</p>
+				<input type="password" id="site-password" placeholder="输入密码" autofocus
+					onkeydown="if(event.key==='Enter') verifySitePassword()" />
+				<button id="login-btn" onclick="verifySitePassword()">进入</button>
+				<div class="login-error" id="login-error">密码错误，请重试</div>
+				<div class="hint">仅限授权用户使用</div>
+			</div>
 		</div>
 
-		<!-- Judge Tab -->
-		<div class="tab-content active" id="tab-judge">
-			<div class="judge-panel">
-				<h2>输入要审核的内容</h2>
-				<div style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-					<label style="font-size: 0.85rem; color: var(--text-light); white-space: nowrap;">审核密钥：</label>
-					<input type="password" id="judge-key" value="Jihao0318"
-						style="flex:1; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; outline: none; font-family: monospace;"
-						placeholder="输入审核密钥" />
-				</div>
-				<textarea id="judge-input" placeholder="在此输入帖子或评论内容，AI 会自动判断是否违规&#10;&#10;试试输入：&#10;• 正常吐槽：三角洲大战场太逆天了，5070最低画质见到人就十几帧&#10;• 网络玩梗：孙笑川简直日本天皇级别&#10;• 违规示例：你真是个白痴，滚出这个论坛"></textarea>
-				<div class="judge-controls">
-					<button id="judge-button">🚀 开始审核</button>
-					<span class="hint">Ctrl+Enter 快速提交</span>
-				</div>
+		<!-- Main Content -->
+		<div id="main-content" class="hidden">
+			<header>
+				<h1>⚖️ AI Judge</h1>
+				<p class="subtitle">内容审核系统 — 检测帖子、评论中的违规内容 ｜ 内置 AI 聊天助手</p>
+			</header>
 
-				<div id="judge-loading" class="hidden" style="margin-top: 1rem; color: var(--text-light);">
-					AI 正在审核中...
-				</div>
+			<div class="tabs">
+				<button class="tab active" data-tab="judge">🧑‍⚖️ 审核测试</button>
+				<button class="tab" data-tab="chat">💬 AI 聊天</button>
+				<button class="tab" data-tab="about">📖 接入说明</button>
+			</div>
 
-				<div id="judge-status">
-					<p style="margin-top: 0.75rem; color: var(--text-light); font-size: 0.85rem;">
-						系统已就绪，等待审核请求
+			<!-- Judge Tab -->
+			<div class="tab-content active" id="tab-judge">
+				<div class="judge-panel">
+					<h2>输入要审核的内容</h2>
+					<div style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+						<label style="font-size: 0.85rem; color: var(--text-light); white-space: nowrap;">审核密钥：</label>
+						<input type="password" id="judge-key" value=""
+							style="flex:1; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; outline: none; font-family: monospace;"
+							placeholder="输入审核密钥（必填）" />
+					</div>
+					<textarea id="judge-input" placeholder="在此输入帖子或评论内容，AI 会自动判断是否违规&#10;&#10;试试输入：&#10;• 正常吐槽：三角洲大战场太逆天了，5070最低画质见到人就十几帧&#10;• 网络玩梗：孙笑川简直日本天皇级别&#10;• 违规示例：你真是个白痴，滚出这个论坛"></textarea>
+					<div class="judge-controls">
+						<button id="judge-button">🚀 开始审核</button>
+						<span class="hint">Ctrl+Enter 快速提交</span>
+					</div>
+
+					<div id="judge-loading" class="hidden" style="margin-top: 1rem; color: var(--text-light);">AI 正在审核中...</div>
+					<div id="judge-status">
+						<p style="margin-top: 0.75rem; color: var(--text-light); font-size: 0.85rem;">系统已就绪，等待审核请求</p>
+					</div>
+					<div id="judge-result" class="hidden">
+						<div style="display: flex; align-items: center; gap: 0.75rem;">
+							<span id="judge-badge-pass" class="result-badge badge-pass hidden">✅ 通过</span>
+							<span id="judge-badge-reject" class="result-badge badge-reject hidden">❌ 拒绝</span>
+							<span id="judge-output"></span>
+						</div>
+						<div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">原始响应：</div>
+						<div class="raw-response" id="judge-raw-response">{ }</div>
+					</div>
+					<div id="judge-error" class="hidden" style="margin-top: 0.75rem; color: var(--red); font-size: 0.85rem;"></div>
+				</div>
+			</div>
+
+			<!-- Chat Tab -->
+			<div class="tab-content" id="tab-chat">
+				<div class="chat-container">
+					<div id="chat-messages" class="chat-messages">
+						<div class="message assistant-message"><p>你好！我是 AI 助手，有什么可以帮你的？</p></div>
+					</div>
+					<div class="typing-indicator" id="typing-indicator">AI 思考中...</div>
+					<div class="message-input">
+						<textarea id="user-input" placeholder="输入消息..." rows="1" autofocus></textarea>
+						<button id="send-button">发送</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- About Tab -->
+			<div class="tab-content" id="tab-about">
+				<div class="judge-panel">
+					<h2>📖 接入指南</h2>
+
+					<h3>API 地址</h3>
+					<div class="raw-response" style="margin-top: 0.3rem;">POST /api/judge</div>
+
+					<h3>认证方式</h3>
+					<div class="raw-response" style="margin-top: 0.3rem;">Header: x-judge-key: Jihao0318&#10;（不携带或密钥错误返回 401）</div>
+
+					<h3>请求格式</h3>
+					<div class="raw-response" style="margin-top: 0.3rem;">{ "content": "要审核的帖子内容" }</div>
+
+					<h3>响应格式</h3>
+					<div class="raw-response" style="margin-top: 0.3rem;">✅ 通过：{ "status": "pass" }&#10;❌ 拒绝：{ "status": "reject", "reason": "人身攻击", "violation_phrase": "蠢货、滚出去" }&#10;⚠️ 异常：{ "status": "pass", "error": "审核服务异常，已默认放行" }</div>
+
+					<h3>审核原则</h3>
+					<div class="raw-response" style="margin-top: 0.3rem;">• 骂产品/游戏/公司 → 放行&#10;• 骂论坛里的其他用户 → 拦截&#10;• 玩梗、网络用语、吐槽 → 放行&#10;• 不确定 → 放行</div>
+
+					<h3>前端集成代码</h3>
+					<div class="raw-response" style="margin-top: 0.3rem;">const JUDGE_API = 'https://llm-chat-app-template.jgp.dpdns.org/api/judge';&#10;const JUDGE_KEY = 'Jihao0318';&#10;&#10;async function reviewPost(content) {&#10;  const res = await fetch(JUDGE_API, {&#10;    method: 'POST',&#10;    headers: {&#10;      'Content-Type': 'application/json',&#10;      'x-judge-key': JUDGE_KEY,&#10;    },&#10;    body: JSON.stringify({ content })&#10;  });&#10;  if (res.status === 401) return true;&#10;  const data = await res.json();&#10;  if (data.status === 'reject') {&#10;    alert('违规：' + data.reason + '\\n违规词：' + data.violation_phrase);&#10;    return false;&#10;  }&#10;  return true;&#10;}</div>
+
+					<h3>技术栈</h3>
+					<p style="margin-top: 0.3rem; font-size: 0.9rem; color: var(--text-light);">
+						AI 模型：Llama 3.1 8B (通过 Cloudflare Workers AI)<br>
+						运行时：Cloudflare Workers<br>
+						部署：<code>npx wrangler deploy</code>
 					</p>
 				</div>
-
-				<div id="judge-result" class="hidden">
-					<div style="display: flex; align-items: center; gap: 0.75rem;">
-						<span id="judge-badge-pass" class="result-badge badge-pass hidden">✅ 通过</span>
-						<span id="judge-badge-reject" class="result-badge badge-reject hidden">❌ 拒绝</span>
-						<span id="judge-output"></span>
-					</div>
-					<div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">原始响应：</div>
-					<div class="raw-response" id="judge-raw-response">{ }</div>
-				</div>
-
-				<div id="judge-error" class="hidden" style="margin-top: 0.75rem; color: var(--red); font-size: 0.85rem;"></div>
 			</div>
+
+			<footer>
+				<p>AI Judge — 基于 Cloudflare Workers AI 的内容审核系统 + 聊天助手</p>
+			</footer>
 		</div>
 
-		<!-- Chat Tab -->
-		<div class="tab-content" id="tab-chat">
-			<div class="chat-container">
-				<div id="chat-messages" class="chat-messages">
-					<div class="message assistant-message"><p>你好！我是 AI 助手，有什么可以帮你的？</p></div>
-				</div>
-				<div class="typing-indicator" id="typing-indicator">AI 思考中...</div>
-				<div class="message-input">
-					<textarea id="user-input" placeholder="输入消息..." rows="1" autofocus></textarea>
-					<button id="send-button">发送</button>
-				</div>
-			</div>
-		</div>
-
-		<!-- About Tab -->
-		<div class="tab-content" id="tab-about">
-			<div class="judge-panel">
-				<h2>📖 接入指南</h2>
-
-				<h3>API 地址</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">POST /api/judge</div>
-
-				<h3>请求格式</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">{ "content": "要审核的帖子内容" }</div>
-
-				<h3>认证方式</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">Header: x-judge-key: Jihao0318&#10;（不携带或密钥错误返回 401）</div>
-
-				<h3>响应格式</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">✅ 通过：{ "status": "pass" }&#10;❌ 拒绝：{ "status": "reject", "reason": "人身攻击", "violation_phrase": "蠢货、滚出去" }&#10;⚠️ 异常：{ "status": "pass", "error": "审核服务异常，已默认放行" }</div>
-
-				<h3>审核原则</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">• 骂产品/游戏/公司 → 放行&#10;• 骂论坛里的其他用户 → 拦截&#10;• 玩梗、网络用语、吐槽 → 放行&#10;• 不确定 → 放行</div>
-
-				<h3>前端集成代码</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">const JUDGE_API = 'https://llm-chat-app-template.jgp.dpdns.org/api/judge';&#10;const JUDGE_KEY = 'Jihao0318';&#10;&#10;async function reviewPost(content) {&#10;  const res = await fetch(JUDGE_API, {&#10;    method: 'POST',&#10;    headers: {&#10;      'Content-Type': 'application/json',&#10;      'x-judge-key': JUDGE_KEY,&#10;    },&#10;    body: JSON.stringify({ content })&#10;  });&#10;  if (res.status === 401) return true; // 密钥错误时默认放行&#10;  const data = await res.json();&#10;  if (data.status === 'reject') {&#10;    alert('违规：' + data.reason + '\\n违规词：' + data.violation_phrase);&#10;    return false;&#10;  }&#10;  return true;&#10;}</div>
-
-				<h3>技术栈</h3>
-				<p style="margin-top: 0.3rem; font-size: 0.9rem; color: var(--text-light);">
-					AI 模型：Llama 3.1 8B (通过 Cloudflare Workers AI)<br>
-					运行时：Cloudflare Workers<br>
-					部署：<code>npx wrangler deploy</code>
-				</p>
-			</div>
-		</div>
-
-		<footer>
-			<p>AI Judge — 基于 Cloudflare Workers AI 的内容审核系统 + 聊天助手</p>
-		</footer>
-
-		<script src="judge.js"></script>
-		<script src="chat.js"></script>
 		<script>
+			// ===== Site Password Verification =====
+			const SITE_PW_KEY = 'ai_judge_authorized';
+
+			async function verifySitePassword() {
+				const pw = document.getElementById('site-password').value.trim();
+				const btn = document.getElementById('login-btn');
+				const err = document.getElementById('login-error');
+
+				if (!pw) { err.textContent = '请输入密码'; err.classList.add('visible'); return; }
+
+				btn.disabled = true;
+				btn.textContent = '验证中...';
+				err.classList.remove('visible');
+
+				try {
+					const res = await fetch('/api/verify-site', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ password: pw }),
+					});
+					const data = await res.json();
+
+					if (data.success) {
+						localStorage.setItem(SITE_PW_KEY, 'true');
+						document.getElementById('site-login-overlay').classList.add('hidden');
+						document.getElementById('main-content').classList.remove('hidden');
+					} else {
+						err.textContent = '密码错误，请重试';
+						err.classList.add('visible');
+					}
+				} catch {
+					err.textContent = '验证服务异常，请稍后再试';
+					err.classList.add('visible');
+				}
+
+				btn.disabled = false;
+				btn.textContent = '进入';
+			}
+
+			// Auto-login if already authorized this session
+			if (localStorage.getItem(SITE_PW_KEY) === 'true') {
+				document.getElementById('site-login-overlay').classList.add('hidden');
+				document.getElementById('main-content').classList.remove('hidden');
+			}
+
+			// Tab switching
 			document.querySelectorAll('.tab').forEach(tab => {
 				tab.addEventListener('click', () => {
 					document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -325,5 +440,7 @@
 				});
 			});
 		</script>
+		<script src="judge.js"></script>
+		<script src="chat.js"></script>
 	</body>
 </html>

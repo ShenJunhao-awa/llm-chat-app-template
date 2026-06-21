@@ -91,6 +91,11 @@ export default {
 			return handleJudgeRequest(request, env);
 		}
 
+		// 站点访问密码验证
+		if (url.pathname === "/api/verify-site" && request.method === "POST") {
+			return handleVerifySite(request, env);
+		}
+
 		// Handle 404 for unmatched routes
 		return new Response("Not found", { status: 404 });
 	},
@@ -133,6 +138,37 @@ async function handleChatRequest(
 				status: 500,
 				headers: { "content-type": "application/json" },
 			},
+		);
+	}
+}
+
+/**
+ * Handles site access verification
+ * Simple password gate to prevent public access to the website
+ */
+async function handleVerifySite(
+	request: Request,
+	env: Env,
+): Promise<Response> {
+	try {
+		const { password } = (await request.json()) as { password: string };
+		const sitePassword = env.SITE_PASSWORD || "Jihao0318";
+
+		if (password === sitePassword) {
+			return new Response(
+				JSON.stringify({ success: true }),
+				{ headers: { "content-type": "application/json" } },
+			);
+		}
+
+		return new Response(
+			JSON.stringify({ success: false, error: "密码错误" }),
+			{ status: 401, headers: { "content-type": "application/json" } },
+		);
+	} catch {
+		return new Response(
+			JSON.stringify({ success: false, error: "请求格式错误" }),
+			{ status: 400, headers: { "content-type": "application/json" } },
 		);
 	}
 }
