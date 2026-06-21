@@ -157,7 +157,7 @@ async function handleJudgeRequest(
 		// Call AI with judge system prompt — non-streaming since output is tiny JSON
 		const result = await env.AI.run<typeof MODEL_ID>(MODEL_ID, {
 			messages: [
-				{ role: "system", content: JUDGE_SYSTEM_PROMPT },
+				{ role: "system", content: SYSTEM_PROMPT },
 				{ role: "user", content: content },
 			],
 			max_tokens: 50, // Only needs to output {"status":"pass"} — ~20 tokens
@@ -172,11 +172,13 @@ async function handleJudgeRequest(
 		// Try to parse the JSON from the AI response
 		let status: "pass" | "reject" = "pass"; // Default to pass if parsing fails
 		let reason: string | undefined;
+		let violationPhrase: string | undefined;
 		try {
 			const parsed = JSON.parse(rawResponse.trim());
 			if (parsed.status === "pass" || parsed.status === "reject") {
 				status = parsed.status;
 				reason = parsed.reason;
+				violationPhrase = parsed.violation_phrase;
 			}
 		} catch {
 			// If AI didn't return valid JSON, try to extract from the raw text
@@ -189,6 +191,7 @@ async function handleJudgeRequest(
 
 		const responseBody: Record<string, any> = { status };
 		if (reason) responseBody.reason = reason;
+		if (violationPhrase) responseBody.violation_phrase = violationPhrase;
 
 		return new Response(
 			JSON.stringify(responseBody),
