@@ -17,8 +17,15 @@ const CHAT_SYSTEM_PROMPT =
 	"You are a helpful, friendly assistant. Provide concise and accurate responses.";
 
 // Strict system prompt for content judge
-const JUDGE_SYSTEM_PROMPT =
-	"You are a content moderator. Analyze the following text and determine if it's appropriate for a community forum. Only return a JSON object with exactly one field: 'status'. If the content is appropriate and does not violate any guidelines, return {\"status\":\"pass\"}. If the content contains hate speech, spam, NSFW material, harassment, personal attacks, or any other inappropriate content, return {\"status\":\"reject\"}. Do not include any other text, explanation, or formatting in your response. Only return the JSON object.";
+const JUDGE_SYSTEM_PROMPT = `你是一个严格的帖子内容审核助手。用户会提交一段帖子文本，你需要判断它是否包含违规内容。
+
+违规类型包括：色情、暴力、政治敏感、人身攻击、垃圾广告、欺诈信息。
+
+【输出格式要求】
+- 如果内容安全，只返回：{"status":"pass"}
+- 如果内容违规，返回：{"status":"reject","reason":"具体的违规原因"}
+
+严禁返回任何其他文字、解释或Markdown格式。只返回纯JSON对象。`;
 
 /** CORS headers for cross-origin requests from the forum */
 const CORS_HEADERS = {
@@ -154,10 +161,12 @@ async function handleJudgeRequest(
 
 		// Try to parse the JSON from the AI response
 		let status: "pass" | "reject" = "pass"; // Default to pass if parsing fails
+		let reason: string | undefined;
 		try {
 			const parsed = JSON.parse(rawResponse.trim());
 			if (parsed.status === "pass" || parsed.status === "reject") {
 				status = parsed.status;
+				reason = parsed.reason;
 			}
 		} catch {
 			// If AI didn't return valid JSON, try to extract from the raw text
@@ -168,8 +177,11 @@ async function handleJudgeRequest(
 			// Otherwise keep default "pass"
 		}
 
+		const responseBody: Record<string, any> = { status };
+		if (reason) responseBody.reason = reason;
+
 		return new Response(
-			JSON.stringify({ status }),
+			JSON.stringify(responseBody),
 			{
 				headers: {
 					"content-type": "application/json",

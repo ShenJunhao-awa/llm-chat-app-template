@@ -54,7 +54,7 @@ async function judgeText() {
     } else if (data.status === "reject") {
       judgeBadgePass.classList.add("hidden");
       judgeBadgeReject.classList.remove("hidden");
-      judgeOutput.textContent = "❌ 内容违规，审核未通过";
+      judgeOutput.textContent = `❌ 内容违规：${data.reason || "未指定原因"}`;
       judgeOutput.className = "text-red-700 font-medium";
     } else {
       judgeOutput.textContent = "⚠️ 审核结果异常：" + (data.error || "未知状态");
