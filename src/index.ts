@@ -167,6 +167,23 @@ async function handleJudgeRequest(
 			);
 		}
 
+		// 校验密钥：必须携带 x-judge-key 头
+		const judgeKey = request.headers.get("x-judge-key");
+		if (!judgeKey || judgeKey !== "Jihao0318") {
+			return new Response(
+				JSON.stringify({ error: "未授权，请提供有效的审核密钥" }),
+				{
+					status: 401,
+					headers: {
+						"content-type": "application/json",
+						...CORS_HEADERS,
+						"Access-Control-Allow-Origin":
+							request.headers.get("Origin") || CORS_HEADERS["Access-Control-Allow-Origin"],
+					},
+				},
+			);
+		}
+
 		// Call AI with judge system prompt — non-streaming since output is tiny JSON
 		const result = await env.AI.run<typeof MODEL_ID>(MODEL_ID, {
 			messages: [

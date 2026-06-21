@@ -227,6 +227,12 @@
 		<div class="tab-content active" id="tab-judge">
 			<div class="judge-panel">
 				<h2>输入要审核的内容</h2>
+				<div style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+					<label style="font-size: 0.85rem; color: var(--text-light); white-space: nowrap;">审核密钥：</label>
+					<input type="password" id="judge-key" value="Jihao0318"
+						style="flex:1; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; outline: none; font-family: monospace;"
+						placeholder="输入审核密钥" />
+				</div>
 				<textarea id="judge-input" placeholder="在此输入帖子或评论内容，AI 会自动判断是否违规&#10;&#10;试试输入：&#10;• 正常吐槽：三角洲大战场太逆天了，5070最低画质见到人就十几帧&#10;• 网络玩梗：孙笑川简直日本天皇级别&#10;• 违规示例：你真是个白痴，滚出这个论坛"></textarea>
 				<div class="judge-controls">
 					<button id="judge-button">🚀 开始审核</button>
@@ -282,6 +288,9 @@
 				<h3>请求格式</h3>
 				<div class="raw-response" style="margin-top: 0.3rem;">{ "content": "要审核的帖子内容" }</div>
 
+				<h3>认证方式</h3>
+				<div class="raw-response" style="margin-top: 0.3rem;">Header: x-judge-key: Jihao0318&#10;（不携带或密钥错误返回 401）</div>
+
 				<h3>响应格式</h3>
 				<div class="raw-response" style="margin-top: 0.3rem;">✅ 通过：{ "status": "pass" }&#10;❌ 拒绝：{ "status": "reject", "reason": "人身攻击", "violation_phrase": "蠢货、滚出去" }&#10;⚠️ 异常：{ "status": "pass", "error": "审核服务异常，已默认放行" }</div>
 
@@ -289,7 +298,7 @@
 				<div class="raw-response" style="margin-top: 0.3rem;">• 骂产品/游戏/公司 → 放行&#10;• 骂论坛里的其他用户 → 拦截&#10;• 玩梗、网络用语、吐槽 → 放行&#10;• 不确定 → 放行</div>
 
 				<h3>前端集成代码</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">const JUDGE_API = 'https://llm-chat-app-template.jgp.dpdns.org/api/judge';&#10;&#10;async function reviewPost(content) {&#10;  const res = await fetch(JUDGE_API, {&#10;    method: 'POST',&#10;    headers: { 'Content-Type': 'application/json' },&#10;    body: JSON.stringify({ content })&#10;  });&#10;  const data = await res.json();&#10;  if (data.status === 'reject') {&#10;    alert('违规：' + data.reason + '\\n违规词：' + data.violation_phrase);&#10;    return false;&#10;  }&#10;  return true;&#10;}</div>
+				<div class="raw-response" style="margin-top: 0.3rem;">const JUDGE_API = 'https://llm-chat-app-template.jgp.dpdns.org/api/judge';&#10;const JUDGE_KEY = 'Jihao0318';&#10;&#10;async function reviewPost(content) {&#10;  const res = await fetch(JUDGE_API, {&#10;    method: 'POST',&#10;    headers: {&#10;      'Content-Type': 'application/json',&#10;      'x-judge-key': JUDGE_KEY,&#10;    },&#10;    body: JSON.stringify({ content })&#10;  });&#10;  if (res.status === 401) return true; // 密钥错误时默认放行&#10;  const data = await res.json();&#10;  if (data.status === 'reject') {&#10;    alert('违规：' + data.reason + '\\n违规词：' + data.violation_phrase);&#10;    return false;&#10;  }&#10;  return true;&#10;}</div>
 
 				<h3>技术栈</h3>
 				<p style="margin-top: 0.3rem; font-size: 0.9rem; color: var(--text-light);">

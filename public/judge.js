@@ -15,6 +15,7 @@ const judgeBadgePass = document.getElementById("judge-badge-pass");
 const judgeBadgeReject = document.getElementById("judge-badge-reject");
 const judgeLoading = document.getElementById("judge-loading");
 const judgeError = document.getElementById("judge-error");
+const judgeKeyInput = document.getElementById("judge-key");
 
 // Judges a piece of text via the API
 async function judgeText() {
@@ -34,11 +35,31 @@ async function judgeText() {
   judgeResult.classList.add("hidden");
 
   try {
+    const key = judgeKeyInput ? judgeKeyInput.value.trim() : "";
+    if (!key) {
+      judgeError.textContent = "请输入审核密钥";
+      judgeError.classList.remove("hidden");
+      judgeButton.disabled = false;
+      judgeLoading.classList.add("hidden");
+      return;
+    }
+
     const response = await fetch("/api/judge", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-judge-key": key,
+      },
       body: JSON.stringify({ content: text }),
     });
+
+    if (response.status === 401) {
+      judgeLoading.classList.add("hidden");
+      judgeError.textContent = "❌ 密钥错误，请检查审核密钥";
+      judgeError.classList.remove("hidden");
+      judgeButton.disabled = false;
+      return;
+    }
 
     const data = await response.json();
 
