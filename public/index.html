@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>AI Judge — 内容审核系统</title>
+		<title>AI Judge — 内容审核系统 + AI 聊天</title>
 		<style>
 			:root {
 				--primary: #f6821f;
@@ -81,6 +81,11 @@
 				margin-bottom: 1rem;
 				color: var(--text);
 			}
+			.judge-panel h3 {
+				font-size: 1rem;
+				margin-top: 1rem;
+				color: var(--text);
+			}
 
 			textarea {
 				width: 100%;
@@ -150,7 +155,7 @@
 
 			.hidden { display: none !important; }
 
-			/* Chat panel (keep original) */
+			/* Chat panel */
 			.chat-container {
 				display: flex;
 				flex-direction: column;
@@ -208,13 +213,13 @@
 	<body>
 		<header>
 			<h1>⚖️ AI Judge</h1>
-			<p class="subtitle">内容审核系统 — 检测帖子、评论中的违规内容</p>
+			<p class="subtitle">内容审核系统 — 检测帖子、评论中的违规内容 ｜ 内置 AI 聊天助手</p>
 		</header>
 
 		<!-- Tabs -->
 		<div class="tabs">
 			<button class="tab active" data-tab="judge">🧑‍⚖️ 审核测试</button>
-			<button class="tab" data-tab="chat">💬 聊天</button>
+			<button class="tab" data-tab="chat">💬 AI 聊天</button>
 			<button class="tab" data-tab="about">📖 接入说明</button>
 		</div>
 
@@ -222,7 +227,7 @@
 		<div class="tab-content active" id="tab-judge">
 			<div class="judge-panel">
 				<h2>输入要审核的内容</h2>
-				<textarea id="judge-input" placeholder="在此输入帖子或评论内容，AI 会自动判断是否违规&#10;&#10;试试输入：&#10;• 正常内容：今天天气真好，大家一起来讨论技术吧&#10;• 违规内容：你真是个白痴，滚出这个论坛"></textarea>
+				<textarea id="judge-input" placeholder="在此输入帖子或评论内容，AI 会自动判断是否违规&#10;&#10;试试输入：&#10;• 正常吐槽：三角洲大战场太逆天了，5070最低画质见到人就十几帧&#10;• 网络玩梗：孙笑川简直日本天皇级别&#10;• 违规示例：你真是个白痴，滚出这个论坛"></textarea>
 				<div class="judge-controls">
 					<button id="judge-button">🚀 开始审核</button>
 					<span class="hint">Ctrl+Enter 快速提交</span>
@@ -252,13 +257,13 @@
 			</div>
 		</div>
 
-		<!-- Chat Tab (原保留) -->
+		<!-- Chat Tab -->
 		<div class="tab-content" id="tab-chat">
 			<div class="chat-container">
 				<div id="chat-messages" class="chat-messages">
 					<div class="message assistant-message"><p>你好！我是 AI 助手，有什么可以帮你的？</p></div>
 				</div>
-				<div class="typing-indicator" id="typing-indicator">AI is thinking...</div>
+				<div class="typing-indicator" id="typing-indicator">AI 思考中...</div>
 				<div class="message-input">
 					<textarea id="user-input" placeholder="输入消息..." rows="1" autofocus></textarea>
 					<button id="send-button">发送</button>
@@ -271,37 +276,37 @@
 			<div class="judge-panel">
 				<h2>📖 接入指南</h2>
 
-				<h3 style="margin-top: 1rem; font-size: 1rem;">API 地址</h3>
+				<h3>API 地址</h3>
 				<div class="raw-response" style="margin-top: 0.3rem;">POST /api/judge</div>
 
-				<h3 style="margin-top: 1rem; font-size: 1rem;">请求格式</h3>
+				<h3>请求格式</h3>
 				<div class="raw-response" style="margin-top: 0.3rem;">{ "content": "要审核的帖子内容" }</div>
 
-				<h3 style="margin-top: 1rem; font-size: 1rem;">成功响应</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">{ "status": "pass" } 或 { "status": "reject" }</div>
+				<h3>响应格式</h3>
+				<div class="raw-response" style="margin-top: 0.3rem;">✅ 通过：{ "status": "pass" }&#10;❌ 拒绝：{ "status": "reject", "reason": "人身攻击", "violation_phrase": "蠢货、滚出去" }&#10;⚠️ 异常：{ "status": "pass", "error": "审核服务异常，已默认放行" }</div>
 
-				<h3 style="margin-top: 1rem; font-size: 1rem;">异常响应</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">{ "status": "pass", "error": "审核服务异常，已默认放行" }</div>
+				<h3>审核原则</h3>
+				<div class="raw-response" style="margin-top: 0.3rem;">• 骂产品/游戏/公司 → 放行&#10;• 骂论坛里的其他用户 → 拦截&#10;• 玩梗、网络用语、吐槽 → 放行&#10;• 不确定 → 放行</div>
 
-				<h3 style="margin-top: 1rem; font-size: 1rem;">论坛集成代码（前端 CreatePost 页面）</h3>
-				<div class="raw-response" style="margin-top: 0.3rem;">const JUDGE_API = 'https://llm-chat-app-template.jgp.dpdns.org/api/judge';&#10;&#10;async function reviewPost(content) {&#10;  const res = await fetch(JUDGE_API, {&#10;    method: 'POST',&#10;    headers: { 'Content-Type': 'application/json' },&#10;    body: JSON.stringify({ content })&#10;  });&#10;  const data = await res.json();&#10;  return data.status === 'pass';&#10;}</div>
+				<h3>前端集成代码</h3>
+				<div class="raw-response" style="margin-top: 0.3rem;">const JUDGE_API = 'https://llm-chat-app-template.jgp.dpdns.org/api/judge';&#10;&#10;async function reviewPost(content) {&#10;  const res = await fetch(JUDGE_API, {&#10;    method: 'POST',&#10;    headers: { 'Content-Type': 'application/json' },&#10;    body: JSON.stringify({ content })&#10;  });&#10;  const data = await res.json();&#10;  if (data.status === 'reject') {&#10;    alert('违规：' + data.reason + '\\n违规词：' + data.violation_phrase);&#10;    return false;&#10;  }&#10;  return true;&#10;}</div>
 
-				<h3 style="margin-top: 1rem; font-size: 1rem;">部署信息</h3>
+				<h3>技术栈</h3>
 				<p style="margin-top: 0.3rem; font-size: 0.9rem; color: var(--text-light);">
-					部署后设置 CLOUDFLARE_ACCOUNT_ID 和 CLOUDFLARE_API_TOKEN 环境变量即可使用。<br>
-					AI 模型：Llama 3.1 8B (通过 Cloudflare Workers AI)
+					AI 模型：Llama 3.1 8B (通过 Cloudflare Workers AI)<br>
+					运行时：Cloudflare Workers<br>
+					部署：<code>npx wrangler deploy</code>
 				</p>
 			</div>
 		</div>
 
 		<footer>
-			<p>AI Judge — 基于 Cloudflare Workers AI 的内容审核系统</p>
+			<p>AI Judge — 基于 Cloudflare Workers AI 的内容审核系统 + 聊天助手</p>
 		</footer>
 
 		<script src="judge.js"></script>
 		<script src="chat.js"></script>
 		<script>
-			// Tab switching logic
 			document.querySelectorAll('.tab').forEach(tab => {
 				tab.addEventListener('click', () => {
 					document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));

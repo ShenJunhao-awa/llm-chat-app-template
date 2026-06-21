@@ -10,12 +10,19 @@ const userInput = document.getElementById("user-input");
 const sendButton = document.getElementById("send-button");
 const typingIndicator = document.getElementById("typing-indicator");
 
+// Update welcome message to Chinese if it exists
+document.querySelectorAll(".assistant-message p").forEach(el => {
+  if (el.textContent.includes("Hello! I'm an LLM chat app")) {
+    el.textContent = "你好！我是 AI 助手，有什么可以帮你的？";
+  }
+});
+
 // Chat state
 let chatHistory = [
 	{
 		role: "assistant",
 		content:
-			"Hello! I'm an LLM chat app powered by Cloudflare Workers AI. How can I help you today?",
+			"你好！我是 AI 助手，有什么可以帮你的？",
 	},
 ];
 let isProcessing = false;
@@ -181,7 +188,7 @@ async function sendMessage() {
 		console.error("Error:", error);
 		addMessageToChat(
 			"assistant",
-			"Sorry, there was an error processing your request.",
+			"抱歉，请求处理出错，请稍后再试。",
 		);
 	} finally {
 		// Hide typing indicator
