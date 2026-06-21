@@ -220,7 +220,7 @@ async function handleJudgeRequest(
 				{ role: "system", content: SYSTEM_PROMPT },
 				{ role: "user", content: content },
 			],
-			max_tokens: 200, // 足够输出多条违规
+			max_tokens: 1024, // 长文章也需要完整审核
 			temperature: 0, // 温度=0 保证每次输出一致
 			stream: false,
 		});
