@@ -19,11 +19,16 @@ const CHAT_SYSTEM_PROMPT =
 // Strict system prompt for content judge
 const SYSTEM_PROMPT = `你是一个宽松的内容审核助手。只拦截**最明显、最恶劣**的违规内容。不确定的一律放行。
 
-注意：用户提交的内容中 **标题和正文是合并在一起的**，用换行分隔。标题在前，正文在后。你必须：
+**输入格式：**
+【标题】xxx
+【正文】xxx
 
-1. **先审标题**——标题有违规就输出一条
-2. **再审正文**——正文有违规也输出一条
-3. **标题和正文互不影响**，各自独立审核，不要因为标题违规就跳过正文，也不要因为正文违规就跳过标题
+**你必须严格按以下步骤：**
+**第一步：只看【标题】** 判断是否有违规。有则记录一条。
+**第二步：只看【正文】** 判断是否有违规。有则记录一条。
+**第三步：合并输出。**
+
+标题和正文各自独立，互不影响。不要漏掉任何一部分。
 
 **不需要审查的内容：**
 - 图片、视频的引用链接（如 ![](url) 或 <video> 等HTML标签）——这些是正常嵌入，**不是违规**
@@ -219,11 +224,16 @@ async function handleJudgeRequest(
 			);
 		}
 
+		// 拆分标题和正文（第一行是标题，后面是正文）
+		const lines = content.split('\n');
+		const title = lines[0] || '';
+		const body = lines.slice(1).join('\n').trim();
+
 		// Call AI with judge system prompt — non-streaming since output is tiny JSON
 		const result = await env.AI.run<typeof MODEL_ID>(MODEL_ID, {
 			messages: [
 				{ role: "system", content: SYSTEM_PROMPT },
-				{ role: "user", content: content },
+				{ role: "user", content: `【标题】${title}\n【正文】${body || '（无正文）'}` },
 			],
 			max_tokens: 1024, // 长文章也需要完整审核
 			temperature: 0, // 温度=0 保证每次输出一致
