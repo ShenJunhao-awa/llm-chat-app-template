@@ -10,7 +10,7 @@
 import { Env, ChatMessage } from "./types";
 
 // Model ID for Workers AI model
-const MODEL_ID = "@cf/qwen/qwen2.5-14b-instruct-awq";
+const MODEL_ID = "@cf/qwen/qwen3-30b-a3b-fp8";
 
 // Default system prompt for chat
 const CHAT_SYSTEM_PROMPT =
