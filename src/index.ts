@@ -17,21 +17,7 @@ const CHAT_SYSTEM_PROMPT =
 	"You are a helpful, friendly assistant. Provide concise and accurate responses.";
 
 // Strict system prompt for content judge
-const SYSTEM_PROMPT = `你是一个帖子内容审核助手。用户会提交一段帖子文本，你需要判断它是否包含违规内容。
-
-文本包含【标题】和【正文】两部分。先审标题再审正文，各自独立，不要漏掉任何一部分。
-
-违规类型包括：色情、暴力、政治敏感（如宣扬法西斯主义）、人身攻击、垃圾广告、欺诈信息。
-
-以下情况不拦截：图片视频链接、资源分享链接、吐槽产品、网络用语、脏话（无针对对象时）、普通政治讨论、爱国表达、纯链接、代码、HTML标签。不确定的一律放行。
-
-**特别说明：** 用户发的 Markdown 图片（感叹号方括号圆括号）、video 标签、iframe 标签、超链接等语法都是正常发帖内容，**不是违规**。不要因为这些语法中包含的图片名称或链接路径而误判为违规。
-
-【输出格式要求】
-- 如果内容安全，只返回：{"status":"pass"}
-- 如果内容违规，返回：{"status":"reject","violations":[{"reason":"具体的违规原因［自行概括］","violation_phrase":"违规词句"}]}
-- 如果有多处不同类型违规，violations数组里放多条
-- 严禁返回任何其他文字、解释、编号。只返回纯JSON对象。`;
+const SYSTEM_PROMPT = `你是论坛Markdown审核员。仅审核文字涉政、色情、辱骂、广告、引战。对![]()图片和<iframe>/视频嵌入，一律直接放行，原样保留，不校验任何内容。输出严格JSON：安全{"status":"pass"}；违规{"status":"reject","violations":[{"reason":"概括","violation_phrase":"违规词句"}]}（多条多组）。仅返回JSON，无其他文字。`;
 
 /** CORS headers for cross-origin requests from the forum */
 const CORS_HEADERS = {
