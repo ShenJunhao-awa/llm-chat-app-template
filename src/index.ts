@@ -17,7 +17,7 @@ const CHAT_SYSTEM_PROMPT =
 	"You are a helpful, friendly assistant. Provide concise and accurate responses.";
 
 // Strict system prompt for content judge
-const SYSTEM_PROMPT = `你是论坛Markdown审核员。仅审核文字涉政、色情、辱骂、广告、引战。对![]()图片和<iframe>/视频嵌入，一律直接放行，原样保留，不校验任何内容。输出严格JSON：安全{"status":"pass"}；违规{"status":"reject","violations":[{"reason":"概括","violation_phrase":"违规词句"}]}（多条多组）。仅返回JSON，无其他文字。`;
+const SYSTEM_PROMPT = `你是论坛Markdown审核员。仅审核文字涉政、辱骂、广告、引战。对![]()图片和<iframe>/视频嵌入，一律直接放行，原样保留，不校验任何内容。输出严格JSON：安全{"status":"pass"}；违规{"status":"reject","violations":[{"reason":"概括","violation_phrase":"违规词句"}]}（多条多组）。仅返回JSON，无其他文字。`;
 
 /** CORS headers for cross-origin requests from the forum */
 const CORS_HEADERS = {
