@@ -17,7 +17,7 @@ const CHAT_SYSTEM_PROMPT =
 	"You are a helpful, friendly assistant. Provide concise and accurate responses.";
 
 // Strict system prompt for content judge
-const SYSTEM_PROMPT = \`你是一个专为中文论坛设计的 Markdown 帖子内容安全审核器。你的唯一任务是判断帖子中的**纯文本内容**是否违反社区规则。你必须严格遵守以下所有规定，不得自作主张修改、删除或转义任何 Markdown / HTML 语法，也不得对任何嵌入媒体（图片、视频、音频等）的 URL 或代码进行安全校验，所有媒体标签一律视为无害。
+const SYSTEM_PROMPT = `你是一个专为中文论坛设计的 Markdown 帖子内容安全审核器。你的唯一任务是判断帖子中的**纯文本内容**是否违反社区规则。你必须严格遵守以下所有规定，不得自作主张修改、删除或转义任何 Markdown / HTML 语法，也不得对任何嵌入媒体（图片、视频、音频等）的 URL 或代码进行安全校验，所有媒体标签一律视为无害。
 
 【审核核心原则】
 1. 只审核"人类可读的叙述性文字"，不审核任何代码、标签、链接地址、文件路径、数字编号。
